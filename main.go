@@ -11,7 +11,7 @@ func main() {
 	router.GET("/health", resource.HealthCheck)
 	router.POST("/expenses", resource.AddExpense)
 
-	err := router.Run("localhost:8000")
+	err := router.Run(":8000")
 	fmt.Println(err)
 
 }
