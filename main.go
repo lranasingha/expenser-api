@@ -13,5 +13,4 @@ func main() {
 
 	err := router.Run(":8000")
 	fmt.Println(err)
-
 }
