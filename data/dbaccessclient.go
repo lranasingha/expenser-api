@@ -2,7 +2,7 @@ package data
 
 import (
 	"database/sql"
-	"expenser-api/service"
+	"expenser-api/dto"
 	"fmt"
 	"log"
 )
@@ -11,7 +11,7 @@ type DbCredentials struct {
 	Username string
 	Password string
 }
-type DbProperties struct {
+type DbClient struct {
 	Type        string
 	Host        string
 	Port        int
@@ -20,11 +20,11 @@ type DbProperties struct {
 }
 
 type ExpenseDbClient interface {
-	Insert(expense service.Expense)
+	Insert(expense dto.Expense)
 }
 
-func MakeDb(dbProperties DbProperties) *sql.DB {
-	db, err := sql.Open(dbProperties.Type, buildConnString(dbProperties.Type, dbProperties))
+func (client DbClient) MakeDb() *sql.DB {
+	db, err := sql.Open(client.Type, client.buildConnString())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,17 +33,31 @@ func MakeDb(dbProperties DbProperties) *sql.DB {
 	return db
 }
 
-func buildConnString(dbType string, dbProperties DbProperties) string {
+func (client DbClient) buildConnString() string {
 	return fmt.Sprintf("%s://%s:%s@%s:%d/%s",
-		dbProperties.Type,
-		dbProperties.Credentials.Username,
-		dbProperties.Credentials.Password,
-		dbProperties.Host,
-		dbProperties.Port,
-		dbProperties.DbName,
+		client.Type,
+		client.Credentials.Username,
+		client.Credentials.Password,
+		client.Host,
+		client.Port,
+		client.DbName,
 	)
 }
 
-func (dbProperties DbProperties) Insert(expense service.Expense) {
+const insertExpense = "INSERT INTO expense (Category, Payload) VALUES(?,?);"
 
+func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
+	stmt, err := db.Prepare(insertExpense)
+
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
+
+	if r, err := stmt.Exec(expense.Category, expense.Payload); err != nil {
+		return -1, err
+	} else {
+		id, _ := r.LastInsertId()
+		return id, nil
+	}
 }

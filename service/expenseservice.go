@@ -2,6 +2,7 @@ package service
 
 import (
 	"expenser-api/data"
+	"expenser-api/dto"
 	"log"
 )
 
@@ -12,32 +13,25 @@ func ReadCredentials() data.DbCredentials {
 	}
 }
 
-var db = data.MakeDb(data.DbProperties{
+var dbClient = data.DbClient{
 	Type:        "postgres",
 	Host:        "localhost",
 	Port:        5432,
 	Credentials: ReadCredentials(),
 	DbName:      "expense-db",
-})
+}
+var db = dbClient.MakeDb()
 
-const insertExpense = "INSERT INTO expense (Category, Payload) VALUES(?,?);"
+type Result struct {
+	Id int64
+}
 
-func AddExpense(expense Expense) {
+func AddExpense(expense dto.Expense) {
 	log.Printf("received expense - %s", expense)
-	stmt, err := db.Prepare(insertExpense)
-
+	var id, err = dbClient.Insert(expense, db)
 	if err != nil {
 		log.Fatal(err)
-		return
-	}
-
-	defer stmt.Close()
-
-	if r, err := stmt.Exec(expense.Category, expense.Payload); err != nil {
-		log.Fatal(err)
-		return
 	} else {
-		id, _ := r.LastInsertId()
-		log.Printf("inserted expense %d", id)
+		log.Printf("inserted expense - %d", id)
 	}
 }

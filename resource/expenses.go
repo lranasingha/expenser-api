@@ -1,13 +1,14 @@
 package resource
 
 import (
+	"expenser-api/dto"
 	"expenser-api/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 func AddExpense(c *gin.Context) {
-	var expense service.Expense
+	var expense dto.Expense
 	e := c.BindJSON(&expense)
 	if e != nil {
 		fmt.Println(e)
