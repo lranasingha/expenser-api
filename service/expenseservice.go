@@ -22,10 +22,6 @@ var dbClient = data.DbClient{
 }
 var db = dbClient.MakeDb()
 
-type Result struct {
-	Id int64
-}
-
 func AddExpense(expense dto.Expense) {
 	log.Printf("received expense - %s", expense)
 	var id, err = dbClient.Insert(expense, db)

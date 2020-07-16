@@ -44,7 +44,7 @@ func (client DbClient) buildConnString() string {
 	)
 }
 
-const insertExpense = "INSERT INTO expense (Category, Payload) VALUES(?,?);"
+const insertExpense = "INSERT INTO expense (UserId, Category, Payload) VALUES(?,?,?);"
 
 func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
 	stmt, err := db.Prepare(insertExpense)
@@ -54,7 +54,7 @@ func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
 	}
 	defer stmt.Close()
 
-	if r, err := stmt.Exec(expense.Category, expense.Payload); err != nil {
+	if r, err := stmt.Exec(expense.UserId, expense.Category, expense.Payload); err != nil {
 		return -1, err
 	} else {
 		id, _ := r.LastInsertId()
