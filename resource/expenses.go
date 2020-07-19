@@ -15,7 +15,7 @@ func AddExpense(c *gin.Context) {
 		c.JSON(400, "failed to read expense request body.")
 	}
 
-	go service.AddExpense(expense)
+	service.AddExpense(expense)
 
 	c.JSON(201, gin.H{})
 }

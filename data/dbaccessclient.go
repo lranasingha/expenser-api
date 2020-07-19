@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"expenser-api/dto"
 	"fmt"
 	_ "github.com/lib/pq"
@@ -31,7 +32,6 @@ func (client DbClient) MakeDb() *sql.DB {
 	}
 	log.Print("connected to DB")
 	db.SetMaxOpenConns(2)
-	defer db.Close()
 	return db
 }
 
@@ -45,20 +45,51 @@ func (client DbClient) buildConnString() string {
 	)
 }
 
-const insertExpense = "INSERT INTO expense (category, name, description, payload) VALUES(?,?,?, ?);"
+const insertExpense = "INSERT INTO expense_schema.user_expense (name, description, category, payload) VALUES($1,$2,$3,$4);"
 
 func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
-	stmt, err := db.Prepare(insertExpense)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Print("recovered from error, returning")
+		}
+	}()
 
-	if err != nil {
-		return -1, err
+	imageBytes, decodeErr := base64.StdEncoding.DecodeString(expense.Payload)
+	if decodeErr != nil {
+		client.Log(decodeErr)
+		return -1, decodeErr
 	}
-	defer stmt.Close()
 
-	if r, err := stmt.Exec(expense.UserId, expense.Category, expense.Payload); err != nil {
-		return -1, err
+	if tx, txErr := db.Begin(); txErr == nil {
+		stmt, err := tx.Prepare(insertExpense)
+
+		if err != nil {
+			client.Rollback(tx)
+			return -1, nil
+		}
+
+		if r, err := stmt.Exec(expense.Name, expense.Description, expense.Category, imageBytes); err != nil {
+			client.Rollback(tx)
+			return -1, err
+		} else {
+			id, _ := r.LastInsertId()
+			err := tx.Commit()
+			client.Log(err)
+			return id, nil
+		}
 	} else {
-		id, _ := r.LastInsertId()
-		return id, nil
+		client.Log(txErr)
+		return -1, txErr
+	}
+}
+
+func (client DbClient) Log(err error) {
+	log.Print(err)
+}
+
+func (client DbClient) Rollback(tx *sql.Tx) {
+	err := tx.Rollback()
+	if err != nil {
+		log.Panic(err)
 	}
 }

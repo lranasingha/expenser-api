@@ -9,3 +9,9 @@ and users.
 ` docker run -it -d -e POSTGRES_PASSWORD=<admin password> -e EXPUSER_PW=<user password> <image id>`
 
 * Then use `db/migrate/0001_create_expense_table.sql` to create tables.
+
+Resources
+
+https://github.com/lib/pq
+https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
+https://github.com/golang-migrate/migrate
