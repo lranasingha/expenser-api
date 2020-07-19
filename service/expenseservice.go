@@ -8,8 +8,8 @@ import (
 
 func ReadCredentials() data.DbCredentials {
 	return data.DbCredentials{
-		Username: "user",
-		Password: "pass",
+		Username: "root",
+		Password: "expmgr-rootpw1",
 	}
 }
 
