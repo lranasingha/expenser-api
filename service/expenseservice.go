@@ -4,12 +4,13 @@ import (
 	"expenser-api/data"
 	"expenser-api/dto"
 	"log"
+	"os"
 )
 
 func ReadCredentials() data.DbCredentials {
 	return data.DbCredentials{
 		Username: "expsvcuser",
-		Password: "", //TODO: inject from env.
+		Password: os.Getenv("EXP_DB_USR_PW"),
 	}
 }
 
@@ -29,5 +30,12 @@ func AddExpense(expense dto.Expense) {
 		log.Panic(err)
 	} else {
 		log.Printf("inserted expense - %d", id)
+	}
+}
+
+func CleanUp() {
+	log.Print("cleaning up the service. closing DB connection.")
+	if err := db.Close(); err != nil {
+		log.Panic("failed to close the DB connection. Quitting.")
 	}
 }
