@@ -20,6 +20,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/health", resource.HealthCheck)
 	router.POST("/expenses", resource.AddExpense)
+	router.GET("/expenses", resource.GetExpenses)
 
 	server := &http.Server{
 		Addr:    ":8000",

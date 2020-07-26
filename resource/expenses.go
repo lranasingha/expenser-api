@@ -7,6 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetExpenses(c *gin.Context) {
+	expenses := service.GetExpenses()
+	c.JSON(200, expenses)
+}
+
+func UpdateExpense(c *gin.Context) {
+	service.UpdateExpense()
+	c.JSON(204, gin.H{})
+}
+
 func AddExpense(c *gin.Context) {
 	var expense dto.Expense
 	e := c.BindJSON(&expense)

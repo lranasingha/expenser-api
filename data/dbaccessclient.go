@@ -45,9 +45,7 @@ func (client DbClient) buildConnString() string {
 	)
 }
 
-const insertExpense = "INSERT INTO expense_schema.user_expense (name, description, category, payload) VALUES($1,$2,$3,$4);"
-
-func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
+func (client DbClient) Insert(query string, expense dto.Expense, db *sql.DB) (int64, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print("recovered from error, returning")
@@ -61,7 +59,7 @@ func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
 	}
 
 	if tx, txErr := db.Begin(); txErr == nil {
-		stmt, err := tx.Prepare(insertExpense)
+		stmt, err := tx.Prepare(query)
 
 		if err != nil {
 			client.Rollback(tx)
@@ -83,13 +81,34 @@ func (client DbClient) Insert(expense dto.Expense, db *sql.DB) (int64, error) {
 	}
 }
 
-func (client DbClient) Log(err error) {
-	log.Print(err)
-}
-
 func (client DbClient) Rollback(tx *sql.Tx) {
 	err := tx.Rollback()
 	if err != nil {
 		log.Panic(err)
 	}
+}
+
+func (client DbClient) SelectAll(query string, db *sql.DB) []dto.Expense {
+	var expenses []dto.Expense
+	if rows, qErr := db.Query(query); qErr != nil {
+		client.Log(qErr)
+	} else {
+		for rows.Next() {
+			var expense dto.Expense
+			if sErr := rows.Scan(&expense.Id, &expense.Name, &expense.Description, &expense.Category, &expense.Payload); sErr != nil {
+				client.Log(sErr)
+			}
+
+			expenses = append(expenses, expense)
+		}
+	}
+	return expenses
+}
+
+func (client DbClient) Update(query string, expense dto.Expense) {
+	log.Panic("TODO")
+}
+
+func (client DbClient) Log(err error) {
+	log.Print(err)
 }
