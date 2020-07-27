@@ -46,7 +46,7 @@ const updateExpense = "UPDATE expense_schema.user_expense SET name=$1, category=
 
 func UpdateExpense(expense dto.Expense) {
 	log.Printf("updating expense - %s", expense)
-	dbClient.Update(updateExpense, expense)
+	dbClient.Update(updateExpense, expense, db)
 }
 func CleanUp() {
 	log.Print("Closing DB connection.")

@@ -105,8 +105,10 @@ func (client DbClient) SelectAll(query string, db *sql.DB) []dto.Expense {
 	return expenses
 }
 
-func (client DbClient) Update(query string, expense dto.Expense) {
-	log.Panic("TODO")
+func (client DbClient) Update(query string, expense dto.Expense, db *sql.DB) {
+	_, err := client.Insert(query, expense, db)
+
+	client.Log(err)
 }
 
 func (client DbClient) Log(err error) {
