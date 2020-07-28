@@ -42,11 +42,17 @@ func GetExpenses() []dto.Expense {
 	return dbClient.SelectAll(selectAll, db)
 }
 
-const updateExpense = "UPDATE expense_schema.user_expense SET name=$1, category=$2, description=$3,payload=$4 WHERE user_id=$5"
+const updateExpense = "UPDATE expense_schema.user_expense SET name=$1, category=$2, description=$3, payload=$4 WHERE user_id=$5"
 
 func UpdateExpense(expense dto.Expense) {
 	log.Printf("updating expense - %s", expense)
-	dbClient.Update(updateExpense, expense, db)
+	result, err := dbClient.Update(updateExpense, expense, db)
+
+	if err == nil {
+		log.Printf("updated expense %d", result)
+	} else {
+		log.Panic(err)
+	}
 }
 func CleanUp() {
 	log.Print("Closing DB connection.")

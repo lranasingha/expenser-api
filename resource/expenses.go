@@ -13,7 +13,15 @@ func GetExpenses(c *gin.Context) {
 }
 
 func UpdateExpense(c *gin.Context) {
-	service.UpdateExpense()
+	var expense dto.Expense
+	e := c.BindJSON(&expense)
+	if e != nil {
+		fmt.Println(e)
+		c.JSON(400, "failed to read expense request body.")
+	}
+
+	service.UpdateExpense(expense)
+
 	c.JSON(204, gin.H{})
 }
 

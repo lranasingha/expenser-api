@@ -105,10 +105,40 @@ func (client DbClient) SelectAll(query string, db *sql.DB) []dto.Expense {
 	return expenses
 }
 
-func (client DbClient) Update(query string, expense dto.Expense, db *sql.DB) {
-	_, err := client.Insert(query, expense, db)
+func (client DbClient) Update(query string, expense dto.Expense, db *sql.DB) (int64, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Print("recovered from error, returning")
+		}
+	}()
 
-	client.Log(err)
+	imageBytes, decodeErr := base64.StdEncoding.DecodeString(expense.Payload)
+	if decodeErr != nil {
+		client.Log(decodeErr)
+		return -1, decodeErr
+	}
+
+	if tx, txErr := db.Begin(); txErr == nil {
+		stmt, err := tx.Prepare(query)
+
+		if err != nil {
+			client.Rollback(tx)
+			return -1, nil
+		}
+
+		if r, exErr := stmt.Exec(expense.Name, expense.Category, expense.Description, imageBytes, expense.Id); exErr != nil {
+			client.Rollback(tx)
+			return -1, exErr
+		} else {
+			id, _ := r.LastInsertId()
+			txCommitErr := tx.Commit()
+			client.Log(txCommitErr)
+			return id, nil
+		}
+	} else {
+		client.Log(txErr)
+		return -1, txErr
+	}
 }
 
 func (client DbClient) Log(err error) {
