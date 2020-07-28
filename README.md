@@ -15,3 +15,7 @@ Resources
 https://github.com/lib/pq
 https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
 https://github.com/golang-migrate/migrate
+
+####TODO:
+* use a DB migrator like flyway
+* add error recovery 

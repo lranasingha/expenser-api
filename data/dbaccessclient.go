@@ -21,10 +21,6 @@ type DbClient struct {
 	DbName      string
 }
 
-type ExpenseDbClient interface {
-	Insert(expense dto.Expense)
-}
-
 func (client DbClient) MakeDb() *sql.DB {
 	db, err := sql.Open(client.Type, client.buildConnString())
 	if err != nil {
